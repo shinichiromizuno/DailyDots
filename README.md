@@ -9,6 +9,7 @@ DailyDots は、1 日 1 件の日記と気分を残せるシンプルな日記�
 - 保存済みの journal を一覧で確認し、編集・削除できる
 - 気分を `happy` / `calm` / `sad` / `angry` / `anxious` から選べる
 - 過去 7 日分の日付候補をワンクリックで入力できる
+- 日記本文にはライブ文字数カウンターを表示し、最大 2000 文字まで入力できる
 
 ## 技術スタック
 
@@ -20,6 +21,8 @@ DailyDots は、1 日 1 件の日記と気分を残せるシンプルな日記�
 - date-fns
 - Tailwind CSS v4
 - ESLint
+- Vitest
+- Testing Library
 
 ## ディレクトリ構成
 
@@ -73,9 +76,8 @@ npm run dev
 npm run build
 npm run lint
 npm run preview
+npm test
 ```
-
-現時点では `test` スクリプトはありません。
 
 ## データ仕様
 
@@ -83,6 +85,7 @@ npm run preview
 - 同じ日付で保存すると既存データを上書きする
 - 保存済みデータは日付の降順で表示する
 - 本文は保存時に前後の空白を除去する
+- 本文は最大 2000 文字まで入力可能で、文字数カウンターで確認できる
 
 ## 補足
 

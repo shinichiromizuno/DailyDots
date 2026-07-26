@@ -61,6 +61,7 @@ export const JournalForm = ({
     setValue,
     reset,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<JournalInput>({
     defaultValues: {
@@ -77,6 +78,9 @@ export const JournalForm = ({
       text: initialValues?.text ?? '',
     })
   }, [initialValues, reset])
+
+  const journalText = watch('text') ?? ''
+  const characterCount = journalText.length
 
   return (
     <form
@@ -140,11 +144,17 @@ export const JournalForm = ({
       </div>
 
       <label className="space-y-1">
-        <span className="block text-sm font-semibold text-slate-700">Journal</span>
+        <div className="flex items-center justify-between">
+          <span className="block text-sm font-semibold text-slate-700">Journal</span>
+          <span className={`text-sm ${characterCount > 2000 ? 'text-red-600' : 'text-slate-500'}`}>
+            {characterCount} / 2000
+          </span>
+        </div>
         <textarea
           rows={6}
           className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none ring-0 transition focus-visible:border-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-300"
           placeholder="Write what happened today..."
+          aria-label="Journal"
           {...register('text', {
             required: 'Journal text is required.',
             minLength: {
