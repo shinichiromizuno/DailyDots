@@ -52,24 +52,24 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
           </Link>
         </header>
 
-        <article className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+        <article className="max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
             <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>
           </div>
-          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
             {weekDays.map((day) => (
               <span key={day}>{day}</span>
             ))}
           </div>
-          <ul className="mt-2 grid grid-cols-7 gap-2">
+          <ul className="mt-2 grid grid-cols-7 gap-1">
             {calendarDays.map((day) => {
               const dateKey = format(day, 'yyyy-MM-dd')
 
               return (
                 <li
                   key={dateKey}
-                  className={`rounded-lg border p-2 text-center ${
+                  className={`rounded-lg border p-1 text-center ${
                     isSameMonth(day, monthStart)
                       ? 'border-slate-200 bg-white'
                       : 'border-transparent bg-slate-100/70 text-slate-400'
@@ -104,17 +104,17 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
         </Link>
       </header>
 
-      <article className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+      <article className="max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
           <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>
         </div>
-        <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
           {weekDays.map((day) => (
             <span key={day}>{day}</span>
           ))}
         </div>
-        <ul className="mt-2 grid grid-cols-7 gap-2">
+        <ul className="mt-2 grid grid-cols-7 gap-1">
           {calendarDays.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd')
             const mood = moodByDate.get(dateKey)
@@ -125,14 +125,14 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
               <li
                 key={dateKey}
                 aria-label={`${format(day, 'MMMM d')}: ${moodDisplay}`}
-                className={`rounded-lg border p-2 text-center ${
+                className={`rounded-lg border p-1 text-center ${
                   isInMonth
                     ? 'border-slate-200 bg-white'
                     : 'border-transparent bg-slate-100/70 text-slate-400'
                 }`}
               >
                 <p className="text-xs font-semibold">{format(day, 'd')}</p>
-                <p className="mt-1 text-base leading-none">{mood ? getMoodEmoji(mood) : '·'}</p>
+                <p className="mt-0.5 text-sm leading-none">{mood ? getMoodEmoji(mood) : '·'}</p>
               </li>
             )
           })}
