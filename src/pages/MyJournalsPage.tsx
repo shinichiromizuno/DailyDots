@@ -1,4 +1,14 @@
 import { Link } from 'react-router-dom'
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameMonth,
+  parseISO,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns'
 import { MOOD_OPTIONS } from '../features/journal/constants/moods'
 import type { JournalEntry } from '../features/journal/types/journal'
 
@@ -12,18 +22,69 @@ const getMoodText = (value: string): string => {
   return mood ? `${mood.emoji} ${mood.label}` : value
 }
 
+const getMoodEmoji = (value: string): string | null => {
+  const mood = MOOD_OPTIONS.find((option) => option.value === value)
+  return mood?.emoji ?? null
+}
+
 export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
+  const referenceDate = entries[0] ? parseISO(entries[0].date) : new Date()
+  const monthStart = startOfMonth(referenceDate)
+  const monthEnd = endOfMonth(referenceDate)
+  const calendarStart = startOfWeek(monthStart)
+  const calendarEnd = endOfWeek(monthEnd)
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
+  const moodByDate = new Map(entries.map((entry) => [entry.date, entry.mood]))
+  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
   if (entries.length === 0) {
     return (
-      <section className="rounded-3xl border border-dashed border-slate-300 bg-white/80 p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-black tracking-tight text-slate-900">My Journals</h2>
-        <p className="mt-3 text-slate-600">No entries yet. Start by adding your first journal.</p>
-        <Link
-          to="/journals/new"
-          className="mt-5 inline-flex rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
-        >
-          Add New Journal
-        </Link>
+      <section className="space-y-4">
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900">My Journals</h2>
+          </div>
+          <Link
+            to="/journals/new"
+            className="inline-flex rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+          >
+            Add New Journal
+          </Link>
+        </header>
+
+        <article className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
+            <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>
+          </div>
+          <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {weekDays.map((day) => (
+              <span key={day}>{day}</span>
+            ))}
+          </div>
+          <ul className="mt-2 grid grid-cols-7 gap-2">
+            {calendarDays.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd')
+
+              return (
+                <li
+                  key={dateKey}
+                  className={`rounded-lg border p-2 text-center ${
+                    isSameMonth(day, monthStart)
+                      ? 'border-slate-200 bg-white'
+                      : 'border-transparent bg-slate-100/70 text-slate-400'
+                  }`}
+                >
+                  <p className="text-xs font-semibold">{format(day, 'd')}</p>
+                </li>
+              )
+            })}
+          </ul>
+        </article>
+
+        <section className="rounded-3xl border border-dashed border-slate-300 bg-white/80 p-8 text-center shadow-sm">
+          <p className="text-slate-600">No entries yet. Start by adding your first journal.</p>
+        </section>
       </section>
     )
   }
@@ -42,6 +103,41 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
           Add New Journal
         </Link>
       </header>
+
+      <article className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
+          <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>
+        </div>
+        <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+          {weekDays.map((day) => (
+            <span key={day}>{day}</span>
+          ))}
+        </div>
+        <ul className="mt-2 grid grid-cols-7 gap-2">
+          {calendarDays.map((day) => {
+            const dateKey = format(day, 'yyyy-MM-dd')
+            const mood = moodByDate.get(dateKey)
+            const isInMonth = isSameMonth(day, monthStart)
+            const moodDisplay = mood ? getMoodText(mood) : 'No mood'
+
+            return (
+              <li
+                key={dateKey}
+                aria-label={`${format(day, 'MMMM d')}: ${moodDisplay}`}
+                className={`rounded-lg border p-2 text-center ${
+                  isInMonth
+                    ? 'border-slate-200 bg-white'
+                    : 'border-transparent bg-slate-100/70 text-slate-400'
+                }`}
+              >
+                <p className="text-xs font-semibold">{format(day, 'd')}</p>
+                <p className="mt-1 text-base leading-none">{mood ? getMoodEmoji(mood) : '·'}</p>
+              </li>
+            )
+          })}
+        </ul>
+      </article>
 
       <ul className="grid gap-4 md:grid-cols-2">
         {entries.map((entry) => (
