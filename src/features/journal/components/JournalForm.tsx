@@ -72,12 +72,14 @@ export const JournalForm = ({
   })
 
   useEffect(() => {
-    reset({
+    const nextValues = {
       date: initialValues?.date ?? getTodayDate(),
       mood: initialValues?.mood ?? DEFAULT_MOOD,
       text: initialValues?.text ?? '',
-    })
-  }, [initialValues, reset])
+    }
+
+    reset(nextValues)
+  }, [initialValues?.date, initialValues?.mood, initialValues?.text, reset])
 
   const journalText = watch('text') ?? ''
   const characterCount = journalText.length

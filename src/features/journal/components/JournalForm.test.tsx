@@ -16,4 +16,29 @@ describe('JournalForm', () => {
 
     expect(screen.getByText('5 / 2000')).toBeInTheDocument()
   })
+
+  it('preserves user input when initial values are re-rendered with the same values', async () => {
+    const user = userEvent.setup()
+    const initialValues = {
+      date: '2024-01-01',
+      mood: 'calm' as const,
+      text: 'seed entry',
+    }
+
+    const { rerender } = render(
+      <JournalForm initialValues={initialValues} submitLabel="Save journal" onSubmit={() => undefined} />,
+    )
+
+    const textarea = screen.getByLabelText(/journal/i)
+    await user.clear(textarea)
+    await user.type(textarea, 'updated entry')
+
+    expect(textarea).toHaveValue('updated entry')
+
+    rerender(
+      <JournalForm initialValues={initialValues} submitLabel="Save journal" onSubmit={() => undefined} />,
+    )
+
+    expect(textarea).toHaveValue('updated entry')
+  })
 })
