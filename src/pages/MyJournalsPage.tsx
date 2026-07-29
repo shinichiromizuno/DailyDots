@@ -67,15 +67,18 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
               const dateKey = format(day, 'yyyy-MM-dd')
 
               return (
-                <li
-                  key={dateKey}
-                  className={`rounded-lg border p-1 text-center ${
-                    isSameMonth(day, monthStart)
-                      ? 'border-slate-200 bg-white'
-                      : 'border-transparent bg-slate-100/70 text-slate-400'
-                  }`}
-                >
-                  <p className="text-xs font-semibold">{format(day, 'd')}</p>
+                <li key={dateKey}>
+                  <Link
+                    to={`/journals/new?date=${dateKey}`}
+                    aria-label={`Add journal for ${format(day, 'MMMM d')}`}
+                    className={`block rounded-lg border p-1 text-center transition hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+                      isSameMonth(day, monthStart)
+                        ? 'border-slate-200 bg-white'
+                        : 'border-transparent bg-slate-100/70 text-slate-400'
+                    }`}
+                  >
+                    <p className="text-xs font-semibold">{format(day, 'd')}</p>
+                  </Link>
                 </li>
               )
             })}
@@ -122,17 +125,19 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
             const moodDisplay = mood ? getMoodText(mood) : 'No mood'
 
             return (
-              <li
-                key={dateKey}
-                aria-label={`${format(day, 'MMMM d')}: ${moodDisplay}`}
-                className={`rounded-lg border p-1 text-center ${
-                  isInMonth
-                    ? 'border-slate-200 bg-white'
-                    : 'border-transparent bg-slate-100/70 text-slate-400'
-                }`}
-              >
-                <p className="text-xs font-semibold">{format(day, 'd')}</p>
-                <p className="mt-0.5 text-sm leading-none">{mood ? getMoodEmoji(mood) : '·'}</p>
+              <li key={dateKey}>
+                <Link
+                  to={`/journals/new?date=${dateKey}`}
+                  aria-label={`${format(day, 'MMMM d')}: ${moodDisplay}`}
+                  className={`block rounded-lg border p-1 text-center transition hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 ${
+                    isInMonth
+                      ? 'border-slate-200 bg-white'
+                      : 'border-transparent bg-slate-100/70 text-slate-400'
+                  }`}
+                >
+                  <p className="text-xs font-semibold">{format(day, 'd')}</p>
+                  <p className="mt-0.5 text-sm leading-none">{mood ? getMoodEmoji(mood) : '·'}</p>
+                </Link>
               </li>
             )
           })}
