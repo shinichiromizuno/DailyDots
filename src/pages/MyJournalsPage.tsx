@@ -14,7 +14,9 @@ import type { JournalEntry } from '../features/journal/types/journal'
 
 interface MyJournalsPageProps {
   entries: JournalEntry[]
-  onDelete: (date: string) => void
+  isLoading?: boolean
+  errorMessage?: string | null
+  onDelete: (date: string) => Promise<void> | void
 }
 
 const getMoodText = (value: string): string => {
@@ -27,7 +29,7 @@ const getMoodEmoji = (value: string): string | null => {
   return mood?.emoji ?? null
 }
 
-export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
+export const MyJournalsPage = ({ entries, isLoading = false, errorMessage, onDelete }: MyJournalsPageProps) => {
   const referenceDate = entries[0] ? parseISO(entries[0].date) : new Date()
   const monthStart = startOfMonth(referenceDate)
   const monthEnd = endOfMonth(referenceDate)
@@ -40,6 +42,18 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
   if (entries.length === 0) {
     return (
       <section className="space-y-4">
+        {errorMessage ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        {isLoading ? (
+          <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-600">
+            Loading journals...
+          </div>
+        ) : null}
+
         <header className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-2xl font-black tracking-tight text-slate-900">My Journals</h2>
@@ -52,7 +66,7 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
           </Link>
         </header>
 
-        <article className="max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+        <article className="mx-auto max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
             <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>
@@ -94,6 +108,18 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
 
   return (
     <section className="space-y-4">
+      {errorMessage ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-600">
+          Loading journals...
+        </div>
+      ) : null}
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-2xl font-black tracking-tight text-slate-900">My Journals</h2>
@@ -107,7 +133,7 @@ export const MyJournalsPage = ({ entries, onDelete }: MyJournalsPageProps) => {
         </Link>
       </header>
 
-      <article className="max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+      <article className="mx-auto max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-bold text-slate-900">Mood Calendar</h3>
           <p className="text-sm font-semibold text-slate-600">{format(referenceDate, 'MMMM yyyy')}</p>

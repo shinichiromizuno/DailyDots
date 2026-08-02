@@ -6,7 +6,9 @@ import type { JournalEntry, JournalInput } from '../features/journal/types/journ
 
 interface AddJournalPageProps {
   entries: JournalEntry[]
-  onSave: (input: JournalInput) => void
+  isLoading?: boolean
+  errorMessage?: string | null
+  onSave: (input: JournalInput) => Promise<void> | void
 }
 
 const getTodayDate = (): string => {
@@ -17,7 +19,7 @@ const getTodayDate = (): string => {
   return `${year}-${month}-${day}`
 }
 
-export const AddJournalPage = ({ entries, onSave }: AddJournalPageProps) => {
+export const AddJournalPage = ({ entries, isLoading = false, errorMessage, onSave }: AddJournalPageProps) => {
   const [searchParams] = useSearchParams()
   const dateInQuery = searchParams.get('date')
   const defaultDate = dateInQuery ?? getTodayDate()
@@ -36,7 +38,20 @@ export const AddJournalPage = ({ entries, onSave }: AddJournalPageProps) => {
         </p>
       </header>
 
+      {errorMessage ? (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
+
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm text-slate-600">
+          Loading journal entries...
+        </div>
+      ) : null}
+
       <JournalForm
+        key={`${currentEntry?.date ?? defaultDate}-${currentEntry?.updatedAt ?? 'new'}`}
         initialValues={{
           date: currentEntry?.date ?? defaultDate,
           mood: currentEntry?.mood ?? DEFAULT_MOOD,

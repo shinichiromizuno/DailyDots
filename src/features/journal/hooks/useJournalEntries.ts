@@ -1,47 +1,132 @@
-import { useCallback, useMemo, useState } from 'react'
-import { journalStorageService } from '../services/journalStorageService'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { journalService } from '../services/journalService'
 import type { JournalEntry, JournalInput } from '../types/journal'
 
-export const useJournalEntries = () => {
-  const [entries, setEntries] = useState<JournalEntry[]>(() => {
-    return journalStorageService.getAll()
-  })
+interface UseJournalEntriesOptions {
+  enabled?: boolean
+}
 
-  const refreshEntries = useCallback(() => {
-    setEntries(journalStorageService.getAll())
-  }, [])
+export const useJournalEntries = ({ enabled = true }: UseJournalEntriesOptions = {}) => {
+  const [entries, setEntries] = useState<JournalEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const saveEntry = useCallback((input: JournalInput) => {
-    const saved = journalStorageService.upsert(input)
+  const refreshEntries = useCallback(async () => {
+    if (!enabled) {
+      return
+    }
 
-    setEntries((current) => {
-      const withoutCurrentDate = current.filter((entry) => entry.date !== saved.date)
-      return [saved, ...withoutCurrentDate].sort((a, b) => b.date.localeCompare(a.date))
-    })
+    setIsLoading(true)
+    setErrorMessage(null)
 
-    return saved
-  }, [])
+    try {
+      const nextEntries = await journalService.getAll()
+      setEntries(nextEntries)
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to load entries.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [enabled])
 
-  const deleteEntry = useCallback((date: string) => {
-    journalStorageService.removeByDate(date)
-    setEntries((current) => current.filter((entry) => entry.date !== date))
-  }, [])
+  const saveEntry = useCallback(async (input: JournalInput) => {
+    if (!enabled) {
+      throw new Error('Journal entries are unavailable while signed out.')
+    }
 
-  const totalCount = entries.length
-  const latestEntry = entries[0] ?? null
+    setErrorMessage(null)
+
+    try {
+      const saved = await journalService.upsert(input)
+
+      setEntries((current) => {
+        const withoutCurrentDate = current.filter((entry) => entry.date !== saved.date)
+        return [saved, ...withoutCurrentDate].sort((a, b) => b.date.localeCompare(a.date))
+      })
+
+      return saved
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save entry.'
+      setErrorMessage(message)
+      throw error
+    }
+  }, [enabled])
+
+  const deleteEntry = useCallback(async (date: string) => {
+    if (!enabled) {
+      return
+    }
+
+    setErrorMessage(null)
+
+    try {
+      await journalService.removeByDate(date)
+      setEntries((current) => current.filter((entry) => entry.date !== date))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete entry.'
+      setErrorMessage(message)
+      throw error
+    }
+  }, [enabled])
+
+  useEffect(() => {
+    if (!enabled) {
+      return
+    }
+
+    let isCancelled = false
+
+    const loadEntries = async () => {
+      setIsLoading(true)
+      setErrorMessage(null)
+
+      try {
+        const nextEntries = await journalService.getAll()
+
+        if (!isCancelled) {
+          setEntries(nextEntries)
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to load entries.')
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadEntries()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [enabled])
+
+  const visibleEntries = useMemo(() => {
+    return enabled ? entries : []
+  }, [enabled, entries])
+
+  const totalCount = visibleEntries.length
+  const latestEntry = visibleEntries[0] ?? null
+  const visibleIsLoading = enabled ? isLoading : false
+  const visibleErrorMessage = enabled ? errorMessage : null
 
   const moodStats = useMemo(() => {
-    return entries.reduce<Record<string, number>>((accumulator, entry) => {
+    return visibleEntries.reduce<Record<string, number>>((accumulator, entry) => {
       accumulator[entry.mood] = (accumulator[entry.mood] ?? 0) + 1
       return accumulator
     }, {})
-  }, [entries])
+  }, [visibleEntries])
 
   return {
-    entries,
+    entries: visibleEntries,
     latestEntry,
     moodStats,
     totalCount,
+    isLoading: visibleIsLoading,
+    errorMessage: visibleErrorMessage,
     saveEntry,
     deleteEntry,
     refreshEntries,

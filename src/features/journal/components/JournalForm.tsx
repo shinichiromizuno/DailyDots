@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { DEFAULT_MOOD, MOOD_OPTIONS } from '../constants/moods'
 import type { JournalInput } from '../types/journal'
@@ -56,12 +56,11 @@ export const JournalForm = ({
   helperText,
   onSubmit,
 }: JournalFormProps) => {
+  const [journalText, setJournalText] = useState(initialValues?.text ?? '')
   const {
     register,
     setValue,
-    reset,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<JournalInput>({
     defaultValues: {
@@ -71,15 +70,6 @@ export const JournalForm = ({
     },
   })
 
-  useEffect(() => {
-    reset({
-      date: initialValues?.date ?? getTodayDate(),
-      mood: initialValues?.mood ?? DEFAULT_MOOD,
-      text: initialValues?.text ?? '',
-    })
-  }, [initialValues, reset])
-
-  const journalText = watch('text') ?? ''
   const characterCount = journalText.length
 
   return (
@@ -164,6 +154,9 @@ export const JournalForm = ({
             maxLength: {
               value: 2000,
               message: 'Please keep your journal under 2000 characters.',
+            },
+            onChange: (event) => {
+              setJournalText(event.target.value)
             },
           })}
         />
